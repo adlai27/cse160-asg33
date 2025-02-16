@@ -391,7 +391,7 @@ function renderScene(){
   gl.clearColor(0.8,0.8,0.9,1.0);
   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
 
-  // SKy => use renderfaster() so we keep UV for sky texture
+  // renderfaster() and keep UV for sky texture
   {
     g_sharedCube.textureNum=0; // sky
     let mat=new Matrix4();
