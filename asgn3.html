@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cat's Playground (Optimized + All Features)</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background: #f4f4f4;
+    }
+    h1 {
+      margin: 10px;
+      padding: 10px;
+      color: #333;
+      background: #dde;
+    }
+    #main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    canvas {
+      border: 1px solid black;
+      margin-top: 10px;
+      cursor: default;
+      outline: none;
+    }
+    #controls {
+      display: flex;
+      flex-wrap: wrap;
+      max-width: 1200px;
+      margin: 10px;
+    }
+    .control-box {
+      border: 2px solid #444;
+      background: #eee;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 6px;
+      min-width: 220px;
+    }
+    .control-box h2 {
+      margin-top: 0;
+      font-size: 1.2em;
+    }
+    #performance-display {
+      color: #333;
+      font-style: italic;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body onload="main()">
+  <h1>Welcome to the Space Cat's Playground!</h1>
+  <h2>Help the Cat catch floating salmon and build floating yarn towers for fun!</h2>
+
+  <div id="main-container">
+
+    <!-- Main canvas -->
+    <canvas id="webgl" width="1000" height="600">
+      Please use a browser that supports "canvas" and WebGL.
+    </canvas>
+    
+    <!-- Controls row -->
+    <div id="controls">
+      
+      <!-- Movement & Blocks -->
+      <div class="control-box">
+        <h2>Movement & Blocks</h2>
+        <p style="line-height:1.6em;">
+          <b>W, A, S, D</b> = Move<br>
+          <b>Z, X</b> = Up/Down<br>
+          <b>Q, E</b> = Turn camera (yaw)<br>
+          <b>F</b> = Add block in front<br>
+          <b>R</b> = Remove block in front<br>
+          <i>(Mouse drag = pitch + yaw)</i>
+        </p>
+      </div>
+      
+      <!-- Animation toggles -->
+      <div class="control-box">
+        <h2>Cat Animation</h2>
+        <button id="toggle-animation">Toggle Walk Anim</button>
+        <button id="toggle-shift" style="margin-left:8px;">Poke/Jump</button>
+      </div>
+
+      <!-- Spawn single salmon -->
+      <div class="control-box">
+        <h2>Spawn Salmon</h2>
+        <button id="spawn-salmon-only-btn">Spawn Salmon! +10 points</button>
+        <p>Spawn salmon around the map and collect them for the Cat!</p>
+      </div>
+
+      <!-- Spawn Yarn Tower -->
+      <div class="control-box">
+        <h2>Spawn Cat Yarn Tower</h2>
+        <button id="spawn-yarn-btn">Spawn Yarn Tower +5 points</button>
+        <p>Generate a yarn tower for +5 points!</p>
+      </div>
+
+      <!-- Score Display -->
+      <div class="control-box">
+        <h2>Cat Happiness Score</h2>
+        <div id="score-display">Score: 0</div>
+      </div>
+      
+      <!-- Performance readout -->
+      <div class="control-box">
+        <h2>Performance</h2>
+        <div id="performance-display">Initializing...</div>
+      </div>
+    </div> <!-- end #controls -->
+
+  </div> <!-- end #main-container -->
+
+  <!-- Libraries -->
+  <script src="lib/cuon-matrix-cse160.js"></script>
+  <script src="lib/webgl-debugs.js"></script>
+  <script src="lib/cuon-utils.js"></script>
+
+  <!-- Our classes -->
+  <script src="camera.js"></script>
+  <script src="Cube.js"></script>
+  <script src="BlockyCube.js"></script>
+  <script src="BlockyPyramid.js"></script>
+  <script src="cylinder.js"></script>
+  <script src="pyramid.js"></script>
+  <script src="blockyAnimal.js"></script>
+
+  <!-- Main assignment code -->
+  <script src="asgn3.js"></script>
+
+</body>
+</html>
