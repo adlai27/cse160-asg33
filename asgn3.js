@@ -1,6 +1,4 @@
-//
 // asgn3.js
-//
 
 // GLSL Shaders
 const VSHADER_SOURCE = `
@@ -75,10 +73,16 @@ let u_SamplerWood;
 
 let g_camera;
 
-// 32×32
+// 32×32 (2D)
 const WORLD_SIZE = 32;
 let g_mapData = [];
 let g_mapTexture = [];
+
+// For 3D blocks
+const WORLD_WIDTH  = 32;
+const WORLD_DEPTH  = 32;
+const WORLD_HEIGHT = 16;
+let g_blocks = [];
 
 let g_salmons = [];
 let g_score = 0;
@@ -133,7 +137,8 @@ function main(){
   g_sharedCube = new Cube();
 
   initEventHandlers();
-  initWorldData();
+  initWorldData();   // 2D
+  initWorldData3D(); // 3D
 
   g_camera = new Camera();
 
@@ -159,10 +164,20 @@ function initEventHandlers(){
       updateScoreUI();
     };
   }
+
   let spawnSalmonOnlyBtn = document.getElementById("spawn-salmon-only-btn");
   if(spawnSalmonOnlyBtn){
     spawnSalmonOnlyBtn.onclick=()=>{
       spawnSingleSalmon(); 
+    };
+  }
+
+  let rocketBtn = document.getElementById("spawn-rocket-btn");
+  if(rocketBtn){
+    rocketBtn.onclick=()=>{
+      spawnYarnRocket();
+      g_score += 10;
+      updateScoreUI();
     };
   }
 
@@ -205,14 +220,15 @@ function onKeyDown(e){
     case "e": case "E": g_camera.rotRight(); break;
     case "z": case "Z": g_camera.upward();   break;
     case "x": case "X": g_camera.downward(); break;
-    case "f": case "F": addBlockInFront();   break;
-    case "r": case "R": removeBlockInFront();break;
+
+    case "f": case "F": placeBlock3D();      break;
+    case "r": case "R": removeBlock3D();     break;
   }
   collectSalmonIfClose();
   renderScene();
 }
 
-// fill 32x32
+// 2D map
 function initWorldData(){
   for(let i=0; i<WORLD_SIZE; i++){
     g_mapData[i] = [];
@@ -232,6 +248,111 @@ function initWorldData(){
     g_mapData[WORLD_SIZE-1][i] = 2;
     g_mapTexture[0][i] = 3;
     g_mapTexture[WORLD_SIZE-1][i]=3;
+  }
+}
+
+// 3D blocks array
+function initWorldData3D(){
+  for (let x = 0; x < WORLD_WIDTH; x++) {
+    g_blocks.push([]);
+    for (let z = 0; z < WORLD_DEPTH; z++) {
+      g_blocks[x].push([]);
+      for (let y = 0; y < WORLD_HEIGHT; y++) {
+        g_blocks[x][z].push(0);
+      }
+    }
+  }
+}
+
+// yarn tower (2D approach)
+function spawnYarnTower(){
+  let i= Math.floor(Math.random()*(WORLD_SIZE-2))+1;
+  let j= Math.floor(Math.random()*(WORLD_SIZE-2))+1;
+  let towerH= Math.floor(Math.random()*4)+2;
+  g_mapData[i][j]   = towerH;
+  g_mapTexture[i][j]=1; // brick
+  console.log("Spawn Yarn Tower at",i,j,"height=",towerH);
+  renderScene();
+}
+
+function spawnYarnRocket(){
+  let baseX = Math.floor(Math.random()*(WORLD_WIDTH-4));
+  let baseZ = Math.floor(Math.random()*(WORLD_DEPTH-4));
+
+  for(let px=0; px<3; px++){
+    for(let pz=0; pz<3; pz++){
+      g_blocks[baseX+px][baseZ+pz][0] = 1;
+    }
+  }
+  for(let px=0; px<2; px++){
+    for(let pz=0; pz<2; pz++){
+      g_blocks[baseX+1+px][baseZ+1+pz][1] = 1;
+    }
+  }
+  g_blocks[baseX+1][baseZ+1][2] = 1;
+
+  g_blocks[baseX][baseZ][1] = 1;      
+  g_blocks[baseX+2][baseZ][1] = 1;    
+  g_blocks[baseX][baseZ+2][1] = 1;
+  g_blocks[baseX+2][baseZ+2][1] = 1;
+
+  console.log("Spawned Yarn Rocket at x=",baseX,"z=",baseZ);
+  renderScene();
+}
+
+// For 3D place/remove blocks
+function placeBlock3D(){
+  let x = Math.floor(g_camera.eye.elements[0] + WORLD_WIDTH/2);
+  let y = Math.floor(g_camera.eye.elements[1]);
+  let z = Math.floor(g_camera.eye.elements[2] + WORLD_DEPTH/2);
+
+  if(x>=0 && x<WORLD_WIDTH && y>=0 && y<WORLD_HEIGHT && z>=0 && z<WORLD_DEPTH){
+    g_blocks[x][z][y] = 1;
+    console.log("3D block placed at x=",x,"y=",y,"z=",z);
+  }
+}
+
+function removeBlock3D(){
+  let x = Math.floor(g_camera.eye.elements[0] + WORLD_WIDTH/2);
+  let y = Math.floor(g_camera.eye.elements[1]);
+  let z = Math.floor(g_camera.eye.elements[2] + WORLD_DEPTH/2);
+
+  if(x>=0 && x<WORLD_WIDTH && y>=0 && y<WORLD_HEIGHT && z>=0 && z<WORLD_DEPTH){
+    g_blocks[x][z][y] = 0;
+    console.log("3D block removed at x=",x,"y=",y,"z=",z);
+  }
+}
+
+// Salmon
+function spawnSingleSalmon(){
+  let i= Math.floor(Math.random()*WORLD_SIZE);
+  let j= Math.floor(Math.random()*WORLD_SIZE);
+  let h= g_mapData[i][j];
+  let salmonY= h+0.5;
+  let salmonX= j - WORLD_SIZE/2;
+  let salmonZ= i - WORLD_SIZE/2;
+  g_salmons.push({x:salmonX,y:salmonY,z:salmonZ});
+  console.log("Spawned single salmon =>",salmonX,salmonY,salmonZ);
+}
+function collectSalmonIfClose(){
+  for(let idx=g_salmons.length-1; idx>=0; idx--){
+    let s=g_salmons[idx];
+    let dist= Math.sqrt(
+      (g_camera.eye.elements[0]-s.x)**2 +
+      (g_camera.eye.elements[1]-s.y)**2 +
+      (g_camera.eye.elements[2]-s.z)**2
+    );
+    if(dist<1.5){
+      g_score +=10;
+      g_salmons.splice(idx,1);
+      updateScoreUI();
+    }
+  }
+}
+function updateScoreUI(){
+  let el=document.getElementById("score-display");
+  if(el){
+    el.innerText=`Score: ${g_score}`;
   }
 }
 
@@ -300,78 +421,6 @@ function updateCatAnimation(){
   }
 }
 
-function addBlockInFront(){
-  let cell = getCellInFront(1.5);
-  if(cell){
-    g_mapData[cell.i][cell.j]++;
-    console.log("Added block at",cell);
-  }
-}
-function removeBlockInFront(){
-  let cell= getCellInFront(1.5);
-  if(cell && g_mapData[cell.i][cell.j]>0){
-    g_mapData[cell.i][cell.j]--;
-    console.log("Removed block at",cell);
-  }
-}
-function getCellInFront(dist=2){
-  let f= new Vector3(g_camera.at.elements);
-  f.sub(g_camera.eye);
-  f.normalize();
-  f.mul(dist);
-  let pos= new Vector3(g_camera.eye.elements);
-  pos.add(f);
-
-  let j= Math.floor(pos.x + WORLD_SIZE/2);
-  let i= Math.floor(pos.z + WORLD_SIZE/2);
-  if(i<0||i>=WORLD_SIZE||j<0||j>=WORLD_SIZE) return null;
-  return {i,j};
-}
-
-// Yarn tower
-function spawnYarnTower(){
-  let i= Math.floor(Math.random()*(WORLD_SIZE-2))+1;
-  let j= Math.floor(Math.random()*(WORLD_SIZE-2))+1;
-  let towerH= Math.floor(Math.random()*4)+2;
-  g_mapData[i][j]   = towerH;
-  g_mapTexture[i][j]=1; // brick
-  console.log("Spawn Yarn Tower at",i,j,"height=",towerH);
-  renderScene();
-}
-
-// Salmon
-function spawnSingleSalmon(){
-  let i= Math.floor(Math.random()*WORLD_SIZE);
-  let j= Math.floor(Math.random()*WORLD_SIZE);
-  let h= g_mapData[i][j];
-  let salmonY= h+0.5;
-  let salmonX= j - WORLD_SIZE/2;
-  let salmonZ= i - WORLD_SIZE/2;
-  g_salmons.push({x:salmonX,y:salmonY,z:salmonZ});
-  console.log("Spawned single salmon =>",salmonX,salmonY,salmonZ);
-}
-function collectSalmonIfClose(){
-  for(let idx=g_salmons.length-1; idx>=0; idx--){
-    let s=g_salmons[idx];
-    let dist= Math.sqrt(
-      (g_camera.eye.elements[0]-s.x)**2 +
-      (g_camera.eye.elements[1]-s.y)**2 +
-      (g_camera.eye.elements[2]-s.z)**2
-    );
-    if(dist<1.5){
-      g_score +=10;
-      g_salmons.splice(idx,1);
-      updateScoreUI();
-    }
-  }
-}
-function updateScoreUI(){
-  let el=document.getElementById("score-display");
-  if(el){
-    el.innerText=`Score: ${g_score}`;
-  }
-}
-
 function renderScene(){
   let start=performance.now();
 
@@ -391,7 +440,7 @@ function renderScene(){
   gl.clearColor(0.8,0.8,0.9,1.0);
   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
 
-  // renderfaster() and keep UV for sky texture
+  // Sky => use renderfaster() 
   {
     g_sharedCube.textureNum=0; // sky
     let mat=new Matrix4();
@@ -404,8 +453,11 @@ function renderScene(){
     g_sharedCube.renderfaster(); 
   }
 
-  // draw the world
+  // 2D columns
   drawWorld();
+
+  // 3D blocks
+  drawBlocks3D();
 
   // cat at (0,0,0)
   drawBlockyCat(0,0,0);
@@ -428,6 +480,7 @@ function renderScene(){
   }
 }
 
+//  2D map (height columns)
 function drawWorld(){
   for(let i=0; i<WORLD_SIZE; i++){
     for(let j=0; j<WORLD_SIZE; j++){
@@ -453,4 +506,23 @@ function drawWorld(){
   gm.scale(WORLD_SIZE,0.2,WORLD_SIZE);
   g_sharedCube.matrix=gm;
   g_sharedCube.renderfaster();
+}
+
+// 3D blocks
+function drawBlocks3D(){
+  let cube = g_sharedCube;
+  for (let x = 0; x < WORLD_WIDTH; x++) {
+    for (let z = 0; z < WORLD_DEPTH; z++) {
+      for (let y = 0; y < WORLD_HEIGHT; y++) {
+        if (g_blocks[x][z][y] === 1) {
+          cube.textureNum = 3; 
+          cube.color=[1,1,1,1];
+          let mat = new Matrix4();
+          mat.translate(x - WORLD_WIDTH/2, y, z - WORLD_DEPTH/2);
+          cube.matrix=mat;
+          cube.renderfaster();
+        }
+      }
+    }
+  }
 }
