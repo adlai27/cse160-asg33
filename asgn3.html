@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Cat's Playground (Optimized + All Features)</title>
+  <title>Cat's Playground (Add/Remove Blocks)</title>
   <style>
     body {
       margin: 0;
@@ -54,7 +54,7 @@
 </head>
 <body onload="main()">
   <h1>Welcome to the Space Cat's Playground!</h1>
-  <h2>Welcome to Space! Help the Cat catch floating salmon and build floating yarn towers for fun!</h2>
+  <h2>Help the Cat catch floating salmon and build floating structures for fun!</h2>
 
   <div id="main-container">
 
@@ -70,11 +70,14 @@
       <div class="control-box">
         <h2>Movement & Blocks</h2>
         <p style="line-height:1.6em;">
-          <b>W, A, S, D</b> = Move<br>
+          <b>W</b> = Forward<br>
+          <b>S</b> = Backward<br>
+          <b>A</b> = Left<br>
+          <b>D</b> = Right<br>
           <b>Z, X</b> = Up/Down<br>
           <b>Q, E</b> = Turn camera (yaw)<br>
-          <b>F</b> = Add block in front<br>
-          <b>R</b> = Remove block in front<br>
+          <b>F</b> = Add block <br>
+          <b>R</b> = Remove block<br>
           <i>(Mouse drag = pitch + yaw)</i>
         </p>
       </div>
@@ -82,15 +85,15 @@
       <!-- Animation toggles -->
       <div class="control-box">
         <h2>Cat Animation</h2>
-        <button id="toggle-animation">Toggle Walk Anim</button>
-        <button id="toggle-shift" style="margin-left:8px;">Poke/Jump</button>
+        <button id="toggle-animation">Walk</button>
+        <button id="toggle-shift" style="margin-left:8px;">Dance!</button>
       </div>
 
-      <!-- Spawn single salmon -->
+      <!-- Spawn  salmon -->
       <div class="control-box">
         <h2>Spawn Salmon</h2>
         <button id="spawn-salmon-only-btn">Spawn Salmon! +10 points</button>
-        <p>Spawn salmon around the map and collect them for the Cat!</p>
+        <p>Spawn salmon around the map and build blocks to collect them for the Cat!</p>
       </div>
 
       <!-- Spawn Yarn Tower -->
@@ -98,6 +101,13 @@
         <h2>Spawn Cat Yarn Tower</h2>
         <button id="spawn-yarn-btn">Spawn Yarn Tower +5 points</button>
         <p>Generate a yarn tower for +5 points!</p>
+      </div>
+
+      <!-- Spawn wood blocks -->
+      <div class="control-box">
+        <h2>Spawn Wood Blocks </h2>
+        <button id="spawn-rocket-btn">Spawn Wood Blocks +10 points</button>
+        <p>Generate wood blocks for the cat to play with for +5 points!</p>
       </div>
 
       <!-- Score Display -->
